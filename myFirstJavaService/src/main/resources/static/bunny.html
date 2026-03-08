@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Server - Pixel Art Bunny 🐰</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: #000000;
+            font-family: 'Courier New', monospace;
+            color: #ffffff;
+            position: relative;
+            padding: 20px;
+        }
+        
+        /* Pixel grid overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Image Placeholder Section */
+        .image-placeholder {
+            width: 100%;
+            height: 200px;
+            background: #111111;
+            border: 4px solid #00ff00;
+            border-radius: 20px;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.3);
+            animation: borderPulse 2s infinite;
+        }
+        
+        .image-placeholder::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 20px,
+                rgba(0, 255, 0, 0.05) 20px,
+                rgba(0, 255, 0, 0.05) 40px
+            );
+            animation: scan 10s linear infinite;
+        }
+        
+        .image-placeholder-content {
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px 30px;
+            border: 2px dashed #00ff00;
+            border-radius: 10px;
+            font-size: 1.5em;
+            color: #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        
+        .image-placeholder-content span {
+            animation: blink 1.5s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Pixel Art Bunny Section */
+        .bunny-section {
+            background: #0a0a0a;
+            border: 4px solid #00ff00;
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            box-shadow: 
+                0 0 0 4px #000,
+                0 0 0 8px #00ff00,
+                0 20px 40px rgba(0, 255, 0, 0.3);
+            position: relative;
+        }
+        
+        .bunny-section::after {
+            content: 'PIXEL ART';
+            position: absolute;
+            bottom: -15px;
+            right: 30px;
+            background: #000;
+            color: #00ff00;
+            padding: 5px 15px;
+            border: 2px solid #00ff00;
+            font-size: 0.8em;
+            letter-spacing: 2px;
+        }
+        
+        .bunny-container {
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .bunny-container pre {
+            font-size: 20px;
+            line-height: 1.2;
+            color: #00ff00;
+            text-shadow: 
+                0 0 10px #00ff00,
+                2px 2px 0 #000;
+            letter-spacing: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .bunny-container pre:hover {
+            transform: scale(1.02);
+            text-shadow: 
+                0 0 20px #00ff00,
+                0 0 40px #00ff00;
+        }
+        
+        /* Cards Section */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+        
+        .card {
+            background: #111111;
+            border: 2px solid #00ff00;
+            border-radius: 20px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 255, 0, 0.1);
+        }
+        
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(0, 255, 0, 0.1),
+                transparent
+            );
+            transition: left 0.5s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #00ff00;
+            box-shadow: 0 15px 30px rgba(0, 255, 0, 0.3);
+        }
+        
+        .card:hover::before {
+            left: 100%;
+        }
+        
+        .card h2 {
+            color: #00ff00;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px dashed #00ff00;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .card p {
+            color: #cccccc;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+        
+        .card b, .card code {
+            color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .card code {
+            border: 1px solid #00ff00;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            padding: 20px;
+            color: #00ff00;
+            font-size: 0.9em;
+            border-top: 2px solid #00ff00;
+            position: relative;
+        }
+        
+        footer::before {
+            content: '◄ ►';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            color: #00ff00;
+            padding: 5px 20px;
+            border: 2px solid #00ff00;
+            font-size: 1.2em;
+        }
+        
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        @keyframes borderPulse {
+            0%, 100% { border-color: #00ff00; box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); }
+            50% { border-color: #00cc00; box-shadow: 0 0 50px rgba(0, 255, 0, 0.6); }
+        }
+        
+        @keyframes scan {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 20px); }
+        }
+        
+        /* Pixel cursor */
+        .pixel-cursor {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #00ff00;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            display: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bunny-container pre {
+                font-size: 14px;
+                letter-spacing: 2px;
+            }
+            
+            .image-placeholder {
+                height: 150px;
+            }
+        }
+        
+        /* Pixel art decoration */
+        .pixel-corner {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            background: #00ff00;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .pixel-corner:nth-child(1) { top: 10px; left: 10px; }
+        .pixel-corner:nth-child(2) { top: 10px; right: 10px; }
+        .pixel-corner:nth-child(3) { bottom: 10px; left: 10px; }
+        .pixel-corner:nth-child(4) { bottom: 10px; right: 10px; }
+    </style>
+</head>
+<body>
+    <!-- Pixel corners -->
+    <div class="pixel-corner"></div>
+    <div class="pixel-corner"></div>
+    <div class="pixel-corner"></div>
+    <div class="pixel-corner"></div>
+    
+    <div class="main-container">
+        <!-- Image Placeholder Section -->
+        <div class="image-placeholder">
+            <div class="image-placeholder-content">
+                <span>🖼️</span> IMAGE PLACEHOLDER <span>🖼️</span>
+            </div>
+        </div>
+        
+        <!-- Pixel Art Bunny Section -->
+        <div class="bunny-section">
+            <div class="bunny-container">
+                <pre th:text="${bunnyArt} ?: '
+         ╱|、
+        (˚ˎ 。7  
+         |、˜〵          
+         じしˍ,)ノ
+    ╱|、     ╱|、
+   (˚ˎ 。7  (˚ˎ 。7
+    |、˜〵   |、˜〵
+    じしˍ,)ノ じしˍ,)ノ'"></pre>
+            </div>
+        </div>
+        
+        <!-- Cards Grid -->
+        <div class="cards-grid">
+            <div class="card">
+                <h2>1. Virtual Machine Provisioning</h2>
+                <p>Successfully provisioned a Linux VM for high-performance Java execution. Configured <b>SSH Key pairs</b> for secure, passwordless deployment from local development to cloud production.</p>
+            </div>
+
+            <div class="card">
+                <h2>2. Containerized Database (Docker)</h2>
+                <p>Deployed <b>MongoDB</b> inside a Docker container. Leveraged Docker Volumes for data persistence and mapped internal ports to <code>27017</code>, ensuring the DB is isolated yet accessible to the Java layer.</p>
+            </div>
+
+            <div class="card">
+                <h2>3. Java 17 & Maven Architecture</h2>
+                <p>Initialized a Spring Boot application using <b>Java 17 SDK</b>. Used Maven for dependency management to integrate the MongoDB driver and REST capabilities.</p>
+            </div>
+
+            <div class="card">
+                <h2>4. Nginx Reverse Proxy</h2>
+                <p>Configured <b>Nginx</b> as a high-performance web server. It acts as a Reverse Proxy, receiving traffic on Port 80 and securely routing it to the Spring Boot internal port (8080).</p>
+            </div>
+
+            <div class="card">
+                <h2>5. Persistence & Management</h2>
+                <p>Utilized <code>nohup</code> for background process persistence. Verified connectivity via a <code>/ping</code> endpoint and verified the DB "Handshake" with an <code>{ok: 1}</code> response.</p>
+            </div>
+        </div>
+
+        <footer>
+            Report generated by Jose's Java Service | 2026
+        </footer>
+    </div>
+
+    <script>
+        // Add pixel cursor effect
+        const cursor = document.createElement('div');
+        cursor.className = 'pixel-cursor';
+        document.body.appendChild(cursor);
+        
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.display = 'block';
+            cursor.style.left = e.clientX - 10 + 'px';
+            cursor.style.top = e.clientY - 10 + 'px';
+        });
+        
+        document.addEventListener('mouseleave', () => {
+            cursor.style.display = 'none';
+        });
+        
+        // Add interactive hover effect for bunny
+        const bunny = document.querySelector('.bunny-container pre');
+        if (bunny) {
+            bunny.addEventListener('mouseenter', () => {
+                bunny.style.transform = 'scale(1.05)';
+            });
+            
+            bunny.addEventListener('mouseleave', () => {
+                bunny.style.transform = 'scale(1)';
+            });
+        }
+        
+        // Random pixel glitch effect on cards
+        const cards = document.querySelectorAll('.card');
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                const glitch = setInterval(() => {
+                    card.style.transform = `translateY(-5px) skew(${Math.random() * 2 - 1}deg)`;
+                }, 50);
+                
+                card.addEventListener('mouseleave', () => {
+                    clearInterval(glitch);
+                    card.style.transform = 'translateY(0) skew(0deg)';
+                }, { once: true });
+            });
+        });
+    </script>
+</body>
+</html>
