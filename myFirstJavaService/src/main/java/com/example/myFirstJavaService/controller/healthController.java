@@ -16,6 +16,6 @@ public class healthController {
     public String index(Model model) {
         model.addAttribute("title", "✨ Pixel Bunny Gallery ✨");
         model.addAttribute("message", "🎨 Created with Pixel Love 🎨");
-        return "pixel-bunny";
+        return "bunny";
     }
 }
